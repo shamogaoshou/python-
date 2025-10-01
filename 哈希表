@@ -1,0 +1,135 @@
+class ExplicitHashTable:
+
+    def __init__(self,size=10):
+
+        self.size = size
+        self.table = [None] * size
+        self.count = 0
+
+    def _get_index(self,key):
+        
+        # 显示调用hash函数计算映射后的键值
+        hash_value = hash(key)
+
+        index = hash_value % self.size
+
+        return index
+    
+    def _put_table(self,key,value):
+
+        index = self._get_index(key)
+
+        # 处理哈希冲突(线性)
+        original_index = index
+        while self.table[index] is not None:
+            
+            # 检查相同映射是否是更新操作
+            if self.table[index][0] == key:
+                print(f"---更新已存在键位: '{key}'---")
+                self.table[index] = (key,value)
+                return
+            
+            # 线性探测处理冲突，移动索引到下一位置
+            index = (index + 1) % self.size
+            print(f"---映射冲突！移动索引到下一位置: {index}处---")
+            if index == original_index:
+                raise Exception("---哈希表已满---")
+            
+
+        #插入新元素
+        self.table[index]=(key,value)
+        self.count += 1
+        print(f"---键{key}存储在位置{index}处---")
+
+    def _get_value(self,key):
+        #从哈希表中访问取值
+        print(f"---从哈希表查询{key}---")
+        index = self._get_index(key)
+        
+        original_index = index
+
+        # 处理映射冲突 线性查找
+        probes = 0  #记录索引移动次数
+        while self.table[index] is not None:
+            probes += 1
+
+            if self.table[index][0] == key:
+                key , value =  self.table[index]
+                print(f"---查询{probes}次---")
+                print(f"---位置: {index} 处查询结果： {key}-> {value}")
+                return value
+
+            # 未直接查询到，移动index位置
+            index = (index + 1) % self.size
+
+            # 遍历表中所有元素仍无结果
+            if index == original_index:
+                print("---查询键值不在表中---")
+                break
+            
+            print(f"键值{key}对应位置不存在元素")
+            return None
+
+    def _display_table(self):
+        # 显示哈希表的内部结构
+
+        print(f"哈希表内部结构\n 大小：{self.size}, 数据数：{self.count}:")
+        
+        for i,item in enumerate(self.table):
+            if item is None:
+                print(f"{i}: None")
+
+            else: 
+                key, value = item
+
+                if i != (self._get_index(key) % self.size):
+                    print(f"{i}: '{value}' -> '{key}'  映射冲突,原映射：'{self._get_index(key) % self.size}'")
+                else:
+                    print(f"{i}: '{value}' -> '{key}'")
+
+def _demonstrate_explicit_hashing():
+    hash_table = ExplicitHashTable(size=8)
+    
+    students = [
+        ("张三", 85),
+        ("李四", 92),
+        ("王五", 78),
+        ("赵六", 96),
+        ("钱七", 88)
+    ]
+
+    print("添加学生成绩：")
+    for name, grades in students:
+        hash_table._put_table(name,grades)
+
+    hash_table._display_table()
+
+    print("\n2. 查询学生成绩:")
+    # 查询存在的学生
+    test_students = ["张三", "李四", "王五", "不存在的学生"]
+    for student in test_students:
+        result = hash_table._get_value(student)
+        if result is not None:
+            print(f"  ✓ {student} 的成绩是: {result}")
+        else:
+            print(f"  ✗ 未找到学生: {student}")
+    
+    print("\n3. 演示哈希冲突:")
+    # 添加更多学生以演示哈希冲突
+    more_students = [
+        ("孙八", 73),
+        ("周九", 91),
+        ("吴十", 84)
+    ]
+    
+    for name, grade in more_students:
+        hash_table._put_table(name, grade)
+    
+    hash_table._display_table()
+    
+    # 查询可能发生冲突的元素
+    print("\n查询可能发生冲突的元素:")
+    hash_table._get_value("周九")
+
+if __name__ == "__main__":
+    _demonstrate_explicit_hashing()
